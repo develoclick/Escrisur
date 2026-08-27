@@ -1,26 +1,212 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ==========================================================================
+   ESCRISUR — sistema de diseño
+   Paleta derivada de la dirección artística de referencia:
+   petróleo profundo + naranja de acción + verde azulado de apoyo,
+   sobre blanco, crema y gris claro.
+   ========================================================================== */
 :root {
+  /* --- tokens de marca (nombres solicitados) --- */
+  --primary: #0a4a52;
+  --primary-dark: #05343b;
+  --accent: #ce471b;        /* relleno de marca; blanco encima = 4.62:1 */
+  --accent-ink: #b83c15;    /* naranja como TEXTO sobre claro = 5.68:1 */
+  --accent-vivid: #ff7a45;  /* naranja aclarado para fondo oscuro = 5.1:1 */
+  --text: #04252b;
+  --text-light: #5c6c71;
   --background: #ffffff;
-  --foreground: #171717;
+  --background-dark: #05343b;
+  --border: #e3e8e9;
+
+  /* --- extensiones del sistema --- */
+  --primary-light: #0f6570;
+  --accent-dark: #a63410;
+  --accent-soft: #fdf3ef;
+  --support: #00a88e;
+  --support-dark: #018670;
+  --background-soft: #fdf3ef;
+  --background-muted: #f1f3f3;
+  --border-strong: #c9d3d5;
+  --on-dark: #ffffff;
+  --on-dark-muted: #a9bcc0;
+  --on-dark-border: rgb(255 255 255 / 0.14);
+
+  /* --- tokens que consumen los componentes shadcn --- */
+  --foreground: var(--text);
+  --card: #ffffff;
+  --card-foreground: var(--text);
+  --popover: #ffffff;
+  --popover-foreground: var(--text);
+  --primary-foreground: #ffffff;
+  --secondary: var(--background-muted);
+  --secondary-foreground: var(--text);
+  --muted: var(--background-muted);
+  --muted-foreground: var(--text-light);
+  --accent-foreground: #ffffff;
+  --destructive: #c0361c;
+  --input: var(--border-strong);
+  --ring: var(--accent);
+  --radius: 0.25rem;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--background-muted);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--accent);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* marca */
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-vivid: var(--accent-vivid);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-support: var(--support);
+  --color-support-dark: var(--support-dark);
+  --color-text: var(--text);
+  --color-text-light: var(--text-light);
+  --color-surface-dark: var(--background-dark);
+  --color-surface-soft: var(--background-soft);
+  --color-surface-muted: var(--background-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-on-dark: var(--on-dark);
+  --color-on-dark-muted: var(--on-dark-muted);
+
+  /* shadcn */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* tipografía */
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-mono: var(--font-body);
+
+  /* radios: la referencia es de esquinas casi rectas */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 10px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-text;
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  ::selection {
+    background: var(--accent);
+    color: #fff;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* contenedor de la referencia: ~1290px con aire lateral generoso */
+  .shell {
+    width: min(100% - 2.5rem, 1290px);
+    margin-inline: auto;
+  }
+  @media (min-width: 1024px) {
+    .shell {
+      width: min(100% - 5rem, 1290px);
+    }
+  }
+
+  /* ritmo vertical de sección */
+  .band {
+    padding-block: clamp(64px, 8vw, 120px);
+  }
+
+  /* rótulo superior naranja subrayado, marca de la referencia */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-accent-ink;
+    text-decoration: underline;
+    text-underline-offset: 5px;
+    text-decoration-thickness: 1px;
+  }
+  /* sobre banda oscura el naranja pleno sí contrasta de sobra */
+  .eyebrow--on-dark {
+    @apply text-accent-vivid;
+  }
+
+  /* patrón de puntos usado tras los collages */
+  .dotgrid {
+    background-image: radial-gradient(var(--border-strong) 1.6px, transparent 1.6px);
+    background-size: 14px 14px;
+  }
+
+  /* recorte diagonal del bloque blanco bajo la cabecera */
+  .notch {
+    clip-path: polygon(0 0, 100% 0, calc(100% - 46px) 100%, 0 100%);
+  }
+}
+
+/* accesibilidad de movimiento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
