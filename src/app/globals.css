@@ -5,38 +5,38 @@
 @custom-variant dark (&:is(.dark *));
 
 /* ==========================================================================
-   ESCRISUR — sistema de diseño
-   Paleta derivada de la dirección artística de referencia:
-   petróleo profundo + naranja de acción + verde azulado de apoyo,
-   sobre blanco, crema y gris claro.
+   ESCRISUR DISTRIBUIDORA — sistema de diseño
+   Paleta tomada del logotipo: verde azulado #038F82 · naranja #FD6B2F ·
+   gris carbón. Contrastes verificados (WCAG AA) en el comentario de cada token.
    ========================================================================== */
 :root {
-  /* --- tokens de marca (nombres solicitados) --- */
-  --primary: #0a4a52;
-  --primary-dark: #05343b;
-  --accent: #ce471b;        /* relleno de marca; blanco encima = 4.62:1 */
-  --accent-ink: #b83c15;    /* naranja como TEXTO sobre claro = 5.68:1 */
-  --accent-vivid: #ff7a45;  /* naranja aclarado para fondo oscuro = 5.1:1 */
-  --text: #04252b;
-  --text-light: #5c6c71;
+  /* --- marca --- */
+  --primary: #037568;          /* verde para texto y botones con blanco · 5.6:1 */
+  --primary-bright: #038f82;   /* verde exacto del logo · superficies y decoración */
+  --primary-hover: #026b5f;    /* hover de botón verde · 6.4:1 */
+  --primary-dark: #072f2b;     /* bandas oscuras */
+  --primary-deep: #04201d;     /* pie de página */
+  --accent: #fd6b2f;           /* naranja exacto del logo · rellenos */
+  --accent-on: #072f2b;        /* texto sobre naranja · 5.05:1 */
+  --accent-hover: #ff8a55;     /* hover del botón naranja · 6.2:1 con texto oscuro */
+  --accent-ink: #b64315;       /* naranja como texto sobre claro · 5.1:1 */
+
+  /* --- neutros --- */
+  --text: #14201e;
+  --text-light: #56615f;       /* 6.4:1 sobre blanco · 5.8:1 sobre gris */
   --background: #ffffff;
-  --background-dark: #05343b;
-  --border: #e3e8e9;
+  --background-soft: #fff5ef;  /* tinte naranja */
+  --background-muted: #eef5f4; /* tinte verde */
+  --background-dark: #072f2b;
+  --border: #dce7e5;
+  --border-strong: #b9cbc8;
 
-  /* --- extensiones del sistema --- */
-  --primary-light: #0f6570;
-  --accent-dark: #a63410;
-  --accent-soft: #fdf3ef;
-  --support: #00a88e;
-  --support-dark: #018670;
-  --background-soft: #fdf3ef;
-  --background-muted: #f1f3f3;
-  --border-strong: #c9d3d5;
+  /* --- sobre fondo oscuro --- */
   --on-dark: #ffffff;
-  --on-dark-muted: #a9bcc0;
-  --on-dark-border: rgb(255 255 255 / 0.14);
+  --on-dark-muted: #a7c4c0;    /* 7.8:1 */
+  --on-dark-teal: #2fc1b1;     /* 6.5:1 */
 
-  /* --- tokens que consumen los componentes shadcn --- */
+  /* --- tokens para shadcn --- */
   --foreground: var(--text);
   --card: #ffffff;
   --card-foreground: var(--text);
@@ -47,50 +47,65 @@
   --secondary-foreground: var(--text);
   --muted: var(--background-muted);
   --muted-foreground: var(--text-light);
-  --accent-foreground: #ffffff;
-  --destructive: #c0361c;
+  --accent-foreground: var(--accent-on);
+  --destructive: #b42318;
   --input: var(--border-strong);
-  --ring: var(--accent);
-  --radius: 0.25rem;
+  --ring: var(--primary-bright);
+  --radius: 0.5rem;
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: var(--text);
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--background-muted);
-  --sidebar-accent-foreground: var(--text);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--accent);
+  /* --- color de ruta: lo reescribe PageTransition con data-tema --- */
+  --tema: var(--accent);
+  --sb-track: var(--background-muted);
+  --sb-thumb: var(--accent);
+  --sb-thumb-hover: var(--accent-ink);
+
+  /* --- movimiento --- */
+  --ease-out: cubic-bezier(0.22, 0.8, 0.28, 1);
+}
+
+:root[data-tema="primary"] {
+  --tema: var(--primary-bright);
+  --sb-thumb: var(--primary-bright);
+  --sb-thumb-hover: var(--primary);
+}
+:root[data-tema="accent"] {
+  --tema: var(--accent);
+  --sb-thumb: var(--accent);
+  --sb-thumb-hover: var(--accent-ink);
+}
+:root[data-tema="dark"] {
+  --tema: var(--primary-dark);
+  --sb-thumb: var(--primary-dark);
+  --sb-thumb-hover: var(--primary-deep);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* marca */
   --color-primary: var(--primary);
+  --color-primary-bright: var(--primary-bright);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-dark: var(--primary-dark);
-  --color-primary-light: var(--primary-light);
+  --color-primary-deep: var(--primary-deep);
   --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
-  --color-accent-dark: var(--accent-dark);
+  --color-accent-on: var(--accent-on);
+  --color-accent-hover: var(--accent-hover);
   --color-accent-ink: var(--accent-ink);
-  --color-accent-vivid: var(--accent-vivid);
-  --color-accent-soft: var(--accent-soft);
   --color-accent-foreground: var(--accent-foreground);
-  --color-support: var(--support);
-  --color-support-dark: var(--support-dark);
+
   --color-text: var(--text);
   --color-text-light: var(--text-light);
-  --color-surface-dark: var(--background-dark);
   --color-surface-soft: var(--background-soft);
   --color-surface-muted: var(--background-muted);
+  --color-surface-dark: var(--background-dark);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-on-dark: var(--on-dark);
   --color-on-dark-muted: var(--on-dark-muted);
+  --color-on-dark-teal: var(--on-dark-teal);
 
-  /* shadcn */
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -102,33 +117,38 @@
   --color-destructive: var(--destructive);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 
-  /* tipografía */
   --font-sans: var(--font-body);
   --font-heading: var(--font-display);
-  --font-mono: var(--font-body);
 
-  /* radios: la referencia es de esquinas casi rectas */
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 6px;
-  --radius-xl: 10px;
-  --radius-2xl: 16px;
-  --radius-3xl: 24px;
-  --radius-4xl: 32px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 18px;
+  --radius-3xl: 26px;
+
+  --animate-marquesina: marquesina 38s linear infinite;
+  --animate-kenburns: kenburns 9s ease-out forwards;
+
+  @keyframes marquesina {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes kenburns {
+    from { transform: scale(1.14); }
+    to { transform: scale(1); }
+  }
 }
 
 @layer base {
   * {
     @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-thumb) var(--sb-track);
   }
   body {
     @apply bg-background text-text;
@@ -143,23 +163,22 @@
   h4,
   h5 {
     font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.025em;
+    font-weight: 800;
+    letter-spacing: -0.02em;
     line-height: 1.12;
     text-wrap: balance;
   }
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--primary-bright);
     outline-offset: 3px;
   }
   ::selection {
     background: var(--accent);
-    color: #fff;
+    color: var(--accent-on);
   }
 }
 
 @layer components {
-  /* contenedor de la referencia: ~1290px con aire lateral generoso */
   .shell {
     width: min(100% - 2.5rem, 1290px);
     margin-inline: auto;
@@ -170,43 +189,147 @@
     }
   }
 
-  /* ritmo vertical de sección */
   .band {
-    padding-block: clamp(64px, 8vw, 120px);
+    padding-block: clamp(68px, 8.5vw, 124px);
   }
 
-  /* rótulo superior naranja subrayado, marca de la referencia */
+  /* rótulo: guion naranja + versalitas espaciadas, como el subtítulo del logo */
   .eyebrow {
-    @apply inline-flex items-center gap-2 text-[0.78rem] font-bold uppercase tracking-[0.14em] text-accent-ink;
-    text-decoration: underline;
-    text-underline-offset: 5px;
-    text-decoration-thickness: 1px;
+    @apply inline-flex items-center gap-3 font-heading text-[0.74rem] font-bold uppercase tracking-[0.2em] text-primary;
   }
-  /* sobre banda oscura el naranja pleno sí contrasta de sobra */
+  .eyebrow::before {
+    content: "";
+    width: 26px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--accent);
+    flex: none;
+  }
   .eyebrow--on-dark {
-    @apply text-accent-vivid;
+    @apply text-on-dark-teal;
   }
 
-  /* patrón de puntos usado tras los collages */
+  /* título de sección con palabra destacada en naranja, como «SUR» en el logo */
+  .hl {
+    color: var(--accent-ink);
+  }
+  .hl--on-dark {
+    color: var(--accent);
+  }
+
+  /* botones: jerarquía primaria (naranja), secundaria (verde), fantasma */
+  .btn {
+    @apply relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-full px-8 py-[15px] font-heading text-[0.84rem] font-bold uppercase tracking-[0.08em] transition-[background-color,color,border-color,box-shadow,transform] duration-300 active:translate-y-px disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply bg-accent text-accent-on shadow-[0_12px_28px_-12px_rgba(253,107,47,0.7)] hover:bg-accent-hover hover:shadow-[0_16px_34px_-12px_rgba(253,107,47,0.75)];
+  }
+  .btn-secondary {
+    @apply bg-primary text-white hover:bg-primary-hover;
+  }
+  .btn-ghost {
+    @apply border border-border-strong bg-transparent text-text hover:border-primary hover:text-primary;
+  }
+  .btn-ghost-dark {
+    @apply border border-white/35 bg-transparent text-white hover:border-white hover:bg-white/10;
+  }
+  .btn .flecha {
+    @apply transition-transform duration-300;
+  }
+  .btn:hover .flecha {
+    transform: translateX(4px);
+  }
+
   .dotgrid {
     background-image: radial-gradient(var(--border-strong) 1.6px, transparent 1.6px);
     background-size: 14px 14px;
   }
 
-  /* recorte diagonal del bloque blanco bajo la cabecera */
-  .notch {
-    clip-path: polygon(0 0, 100% 0, calc(100% - 46px) 100%, 0 100%);
+  /* franja diagonal verde/naranja, eco del icono del logo */
+  .franja {
+    background: linear-gradient(
+      115deg,
+      var(--primary-bright) 0 49.5%,
+      #fff 49.5% 50.5%,
+      var(--accent) 50.5% 100%
+    );
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
 
-/* accesibilidad de movimiento */
+/* ==========================================================================
+   Revelado al hacer scroll
+   Solo se oculta cuando <html> tiene la clase `js` (la añade un script en
+   <head> antes de pintar). Sin JavaScript el contenido se ve completo, y si
+   la aplicación no llega a hidratarse ese mismo script retira la clase.
+   ========================================================================== */
+.js [data-reveal]:not(.is-in) {
+  opacity: 0;
+  transform: translate3d(var(--rx, 0px), var(--ry, 32px), 0);
+}
+.js [data-reveal] {
+  transition:
+    opacity 0.75s var(--ease-out) var(--rd, 0s),
+    transform 0.75s var(--ease-out) var(--rd, 0s);
+}
+.js [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Entrada de cabeceras: CSS puro, visible aunque JavaScript no cargue */
+.entrada > * {
+  animation: entrada 0.8s var(--ease-out) both;
+}
+.entrada > *:nth-child(2) { animation-delay: 0.08s; }
+.entrada > *:nth-child(3) { animation-delay: 0.16s; }
+.entrada > *:nth-child(4) { animation-delay: 0.24s; }
+.entrada > *:nth-child(5) { animation-delay: 0.32s; }
+@keyframes entrada {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+}
+
+/* ==========================================================================
+   Barra de desplazamiento teñida según la ruta (Chromium / WebKit)
+   ========================================================================== */
+html::-webkit-scrollbar {
+  width: 13px;
+  height: 13px;
+}
+html::-webkit-scrollbar-track {
+  background: var(--sb-track);
+}
+html::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb);
+  border: 3px solid var(--sb-track);
+  border-radius: 999px;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--sb-thumb-hover);
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .js [data-reveal]:not(.is-in) {
+    opacity: 1;
+    transform: none;
+  }
   *,
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
   }
 }

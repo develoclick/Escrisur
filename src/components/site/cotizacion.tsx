@@ -1,310 +1,411 @@
 "use client";
 
 import * as React from "react";
-import { AlertCircle, ArrowRight, Check, Copy } from "lucide-react";
-import { Media, Reveal } from "@/components/site/primitives";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { EMPRESA, TIPOS_CLIENTE } from "@/lib/content";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  ClipboardList,
+  Copy,
+  HardHat,
+  Landmark,
+  Layers,
+  Loader2,
+  PenLine,
+  SprayCan,
+  Wrench,
+} from "lucide-react";
+import { EMPRESA, LINEAS_FORM, PENDIENTE, TIPOS_CLIENTE } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
-type Campos = {
+const ICONOS: Record<string, typeof PenLine> = {
+  escritorio: PenLine,
+  ferreteria: Wrench,
+  epp: HardHat,
+  limpieza: SprayCan,
+  licitacion: Landmark,
+  mixto: Layers,
+};
+
+type Datos = {
+  linea: string;
+  tipo: string;
+  detalle: string;
   nombre: string;
   organizacion: string;
   correo: string;
   telefono: string;
-  tipo: string;
-  requerimiento: string;
-  mensaje: string;
+  web: string;
 };
 
-const VACIO: Campos = {
-  nombre: "",
-  organizacion: "",
-  correo: "",
-  telefono: "",
-  tipo: TIPOS_CLIENTE[0],
-  requerimiento: "",
-  mensaje: "",
-};
+const CORREO_OK = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const EASE = [0.22, 0.8, 0.28, 1] as const;
 
-const OBLIGATORIOS: { campo: keyof Campos; etiqueta: string }[] = [
-  { campo: "nombre", etiqueta: "nombre" },
-  { campo: "organizacion", etiqueta: "empresa o institución" },
-  { campo: "correo", etiqueta: "correo" },
-  { campo: "requerimiento", etiqueta: "producto o servicio requerido" },
-];
+function Formulario({ compacto }: { compacto: boolean }) {
+  const params = useSearchParams();
+  const reduce = useReducedMotion();
+  const lineaUrl = params.get("linea");
+  const lineaInicial = LINEAS_FORM.some((l) => l.valor === lineaUrl) ? (lineaUrl as string) : "";
 
-/**
- * El envío queda preparado para conectarse con un servicio de correo:
- * basta con sustituir `enviar` por un fetch a /api/cotizacion (o a Resend,
- * Formspree, etc.). Mientras tanto, compone la solicitud para copiarla.
- */
-async function enviar(datos: Campos): Promise<{ ok: boolean; texto: string }> {
-  const fecha = new Date().toLocaleDateString("es-PE", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
+  const [paso, setPaso] = React.useState<1 | 2 | 3>(1);
+  const [d, setD] = React.useState<Datos>({
+    linea: lineaInicial,
+    tipo: TIPOS_CLIENTE[0],
+    detalle: "",
+    nombre: "",
+    organizacion: "",
+    correo: "",
+    telefono: "",
+    web: "",
   });
-  const texto = [
-    `SOLICITUD DE COTIZACIÓN — ${EMPRESA.marca}`,
-    `Fecha: ${fecha}`,
-    "",
-    `Nombre              : ${datos.nombre}`,
-    `Empresa/institución : ${datos.organizacion}`,
-    `Tipo de cliente     : ${datos.tipo}`,
-    `Correo              : ${datos.correo}`,
-    `Teléfono            : ${datos.telefono || "—"}`,
-    "",
-    "PRODUCTO O SERVICIO REQUERIDO",
-    datos.requerimiento,
-    ...(datos.mensaje ? ["", "MENSAJE", datos.mensaje] : []),
-  ].join("\n");
-
-  return { ok: true, texto };
-}
-
-export function Cotizacion() {
-  const [datos, setDatos] = React.useState<Campos>(VACIO);
-  const [faltan, setFaltan] = React.useState<string[]>([]);
-  const [salida, setSalida] = React.useState<string | null>(null);
+  const [errores, setErrores] = React.useState<Partial<Record<keyof Datos, string>>>({});
+  const [estado, setEstado] = React.useState<"idle" | "enviando" | "enviado" | "manual">("idle");
   const [copiado, setCopiado] = React.useState(false);
 
-  const set = (k: keyof Campos) => (v: string) =>
-    setDatos((d) => ({ ...d, [k]: v }));
+  const set = <K extends keyof Datos>(k: K, v: Datos[K]) => {
+    setD((x) => ({ ...x, [k]: v }));
+    if (errores[k]) setErrores((e) => ({ ...e, [k]: undefined }));
+  };
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const vacios = OBLIGATORIOS.filter((o) => !datos[o.campo].trim());
-    if (vacios.length) {
-      setFaltan(vacios.map((o) => o.etiqueta));
-      setSalida(null);
-      return;
+  const etiquetaLinea = LINEAS_FORM.find((l) => l.valor === d.linea)?.label ?? "Sin especificar";
+
+  const validarPaso1 = () => {
+    const e: typeof errores = {};
+    if (!d.linea) e.linea = "Elija qué necesita cotizar.";
+    if (d.detalle.trim().length < 10) e.detalle = "Describa brevemente productos y cantidades.";
+    setErrores(e);
+    return Object.keys(e).length === 0;
+  };
+  const validarPaso2 = () => {
+    const e: typeof errores = {};
+    if (!d.nombre.trim()) e.nombre = "Indique su nombre.";
+    if (!d.organizacion.trim()) e.organizacion = "Indique su empresa o institución.";
+    if (!CORREO_OK.test(d.correo.trim())) e.correo = "Escriba un correo válido.";
+    setErrores(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const resumen = [
+    `SOLICITUD DE COTIZACIÓN — ${EMPRESA.marca}`,
+    "",
+    `Línea: ${etiquetaLinea}`,
+    `Tipo de cliente: ${d.tipo}`,
+    `Nombre: ${d.nombre}`,
+    `Organización: ${d.organizacion}`,
+    `Correo: ${d.correo}`,
+    `Teléfono: ${d.telefono || "—"}`,
+    "",
+    "Requerimiento:",
+    d.detalle,
+  ].join("\n");
+
+  async function enviar() {
+    if (!validarPaso2()) return;
+    setEstado("enviando");
+    try {
+      const r = await fetch("/api/cotizacion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...d, linea: etiquetaLinea }),
+      });
+      setEstado(r.ok ? "enviado" : "manual");
+    } catch {
+      setEstado("manual");
     }
-    setFaltan([]);
-    const r = await enviar(datos);
-    setSalida(r.ok ? r.texto : null);
+    setPaso(3);
   }
 
   async function copiar() {
-    if (!salida) return;
     try {
-      await navigator.clipboard.writeText(salida);
+      await navigator.clipboard.writeText(resumen);
       setCopiado(true);
-      setTimeout(() => setCopiado(false), 1900);
+      setTimeout(() => setCopiado(false), 2000);
     } catch {
       setCopiado(false);
     }
   }
 
-  const invalido = (k: keyof Campos) =>
-    faltan.length > 0 && !datos[k].trim() && OBLIGATORIOS.some((o) => o.campo === k);
+  const whatsapp = EMPRESA.whatsapp.replace(/\D/g, "");
+  const correoDefinido = EMPRESA.correo && EMPRESA.correo !== PENDIENTE;
+
+  const campo =
+    "h-13 w-full rounded-xl border border-border-strong bg-white px-4 text-[0.97rem] text-text outline-none transition-[border-color,box-shadow] placeholder:text-text-light/70 focus:border-primary-bright focus:ring-4 focus:ring-primary-bright/15";
+
+  const anim = {
+    initial: reduce ? false : { opacity: 0, x: 30 },
+    animate: { opacity: 1, x: 0 },
+    exit: reduce ? undefined : { opacity: 0, x: -30 },
+    transition: { duration: 0.4, ease: EASE },
+  };
 
   return (
-    <section id="cotizacion" className="relative isolate">
-      {/* dos tonos a página completa, como la banda de la referencia */}
-      <div aria-hidden="true" className="absolute inset-0 -z-10 lg:grid lg:grid-cols-2">
-        <div className="h-full bg-primary-dark" />
-        <div className="hidden h-full bg-surface-muted lg:block" />
-      </div>
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-primary-dark lg:hidden" />
-
-      <div className="shell grid items-center gap-14 py-[clamp(64px,8vw,120px)] lg:grid-cols-2 lg:gap-16">
-        {/* texto */}
-        <Reveal className="text-white">
-          <span className="eyebrow eyebrow--on-dark">Cotizaciones</span>
-          <h2 className="mt-6 max-w-[15ch] font-heading text-[clamp(1.9rem,3.7vw,3rem)] font-extrabold text-white">
-            Solicite una cotización
-          </h2>
-          <p className="mt-6 max-w-[44ch] text-[0.99rem] leading-[1.85] text-on-dark-muted">
-            Indíquenos qué productos o servicios necesita y prepararemos una
-            propuesta ajustada al procedimiento de compra de su organización.
-          </p>
-
-          <dl className="mt-10 grid max-w-[440px] gap-px overflow-hidden bg-white/12 sm:grid-cols-2">
-            <div className="bg-primary-dark p-5">
-              <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-on-dark-muted">
-                Domicilio
-              </dt>
-              <dd className="mt-2 text-[0.92rem] font-semibold text-white">
-                {EMPRESA.distrito}, {EMPRESA.provincia}
-                <br />
-                {EMPRESA.region}, {EMPRESA.pais}
-              </dd>
-            </div>
-            <div className="bg-primary-dark p-5">
-              <dt className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-on-dark-muted">
-                Registro
-              </dt>
-              <dd className="mt-2 text-[0.92rem] font-semibold text-white">
-                {EMPRESA.tipo}
-                <br />
-                Partida N.º {EMPRESA.partida}
-              </dd>
-            </div>
-          </dl>
-
-          <div className="group mt-10 hidden max-w-[440px] lg:block">
-            <Media
-              slot="cotizacion"
-              alt="Atención a clientes institucionales y preparación de propuestas"
-              className="aspect-[4/3]"
-              sizes="40vw"
+    <div className="rounded-3xl bg-white p-[clamp(22px,3.4vw,44px)] text-text shadow-[0_40px_90px_-40px_rgba(4,32,29,0.55)]">
+      {/* progreso */}
+      {paso < 3 && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between font-heading text-[0.74rem] font-bold uppercase tracking-[0.14em]">
+            <span className="text-primary">Paso {paso} de 2</span>
+            <span className="text-text-light">{paso === 1 ? "Su requerimiento" : "Sus datos"}</span>
+          </div>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-muted">
+            <motion.div
+              className="h-full rounded-full bg-accent"
+              animate={{ width: paso === 1 ? "50%" : "100%" }}
+              transition={{ duration: 0.5, ease: EASE }}
             />
           </div>
-        </Reveal>
+        </div>
+      )}
 
-        {/* formulario */}
-        <Reveal delay={0.1}>
-          <div className="bg-accent p-[clamp(24px,3.4vw,44px)] text-white shadow-[0_36px_80px_-40px_rgba(4,37,43,0.7)]">
-            <h3 className="font-heading text-[1.45rem] font-extrabold text-white">
-              Formulario de solicitud
-            </h3>
-            <p className="mt-2 text-[0.88rem] leading-relaxed text-white">
-              Los campos marcados son necesarios para preparar la propuesta.
+      <AnimatePresence mode="wait" initial={false}>
+        {paso === 1 && (
+          <motion.div key="p1" {...anim}>
+            <fieldset>
+              <legend className="font-heading text-[1.3rem] font-extrabold text-text">¿Qué necesita cotizar?</legend>
+              <div className={cn("mt-5 grid gap-3", compacto ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3")}>
+                {LINEAS_FORM.map((l) => {
+                  const Icono = ICONOS[l.valor];
+                  const on = d.linea === l.valor;
+                  return (
+                    <label
+                      key={l.valor}
+                      className={cn(
+                        "group relative flex cursor-pointer flex-col gap-3 rounded-2xl border-2 p-4 transition-all duration-300 has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-primary-bright/25",
+                        on ? "border-primary-bright bg-surface-muted" : "border-border hover:border-border-strong",
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        name="linea"
+                        value={l.valor}
+                        checked={on}
+                        onChange={() => set("linea", l.valor)}
+                        className="sr-only"
+                      />
+                      <span className={cn("grid size-10 place-items-center rounded-xl transition-colors", on ? "bg-primary-bright text-white" : "bg-surface-muted text-primary")}>
+                        <Icono className="size-5" aria-hidden="true" />
+                      </span>
+                      <span className="text-[0.88rem] font-bold leading-snug">{l.label}</span>
+                      {on && (
+                        <Check className="absolute right-3 top-3 size-4 text-primary-bright" strokeWidth={3} aria-hidden="true" />
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+              {errores.linea && <Error texto={errores.linea} />}
+            </fieldset>
+
+            <fieldset className="mt-7">
+              <legend className="text-[0.8rem] font-bold uppercase tracking-[0.1em] text-text-light">Tipo de cliente</legend>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {TIPOS_CLIENTE.map((t) => (
+                  <label
+                    key={t}
+                    className={cn(
+                      "cursor-pointer rounded-full border px-4 py-2 text-[0.86rem] font-semibold transition-colors has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-primary-bright/25",
+                      d.tipo === t ? "border-primary bg-primary text-white" : "border-border-strong text-text hover:border-primary",
+                    )}
+                  >
+                    <input type="radio" name="tipo" value={t} checked={d.tipo === t} onChange={() => set("tipo", t)} className="sr-only" />
+                    {t}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <div className="mt-7">
+              <label htmlFor="c-detalle" className="text-[0.8rem] font-bold uppercase tracking-[0.1em] text-text-light">
+                Detalle del requerimiento
+              </label>
+              <textarea
+                id="c-detalle"
+                rows={4}
+                value={d.detalle}
+                onChange={(e) => set("detalle", e.target.value)}
+                aria-invalid={!!errores.detalle}
+                aria-describedby={errores.detalle ? "c-detalle-err" : undefined}
+                placeholder="Ej.: 50 millares de papel bond A4, 30 archivadores lomo ancho y 10 cajas de tóner."
+                className={cn(campo, "mt-3 h-auto py-3 leading-relaxed", errores.detalle && "border-destructive")}
+              />
+              {errores.detalle && <Error id="c-detalle-err" texto={errores.detalle} />}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => validarPaso1() && setPaso(2)}
+              className="btn btn-primary mt-8 w-full"
+            >
+              Continuar
+              <ArrowRight className="flecha size-4" aria-hidden="true" />
+            </button>
+          </motion.div>
+        )}
+
+        {paso === 2 && (
+          <motion.form
+            key="p2"
+            {...anim}
+            noValidate
+            onSubmit={(e) => {
+              e.preventDefault();
+              enviar();
+            }}
+          >
+            <p className="font-heading text-[1.3rem] font-extrabold text-text">¿A quién enviamos la propuesta?</p>
+            <p className="mt-2 flex items-center gap-2 text-[0.9rem] text-text-light">
+              <ClipboardList className="size-4 text-primary" aria-hidden="true" />
+              {etiquetaLinea} · {d.tipo}
             </p>
 
-            <form onSubmit={onSubmit} noValidate className="mt-7 grid gap-4 sm:grid-cols-2">
-              <Campo
-                id="c-nombre" label="Nombre *" value={datos.nombre}
-                onChange={set("nombre")} invalid={invalido("nombre")}
-                placeholder="Nombres y apellidos" autoComplete="name"
-              />
-              <Campo
-                id="c-org" label="Empresa / institución *" value={datos.organizacion}
-                onChange={set("organizacion")} invalid={invalido("organizacion")}
-                placeholder="Nombre de la organización" autoComplete="organization"
-              />
-              <Campo
-                id="c-correo" label="Correo *" type="email" value={datos.correo}
-                onChange={set("correo")} invalid={invalido("correo")}
-                placeholder="correo@organizacion.pe" autoComplete="email"
-              />
-              <Campo
-                id="c-tel" label="Teléfono" type="tel" value={datos.telefono}
-                onChange={set("telefono")} placeholder="9xx xxx xxx" autoComplete="tel"
-              />
-
-              <div className="grid gap-2 sm:col-span-2">
-                <Label htmlFor="c-tipo" className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-white">
-                  Tipo de cliente
-                </Label>
-                <select
-                  id="c-tipo"
-                  value={datos.tipo}
-                  onChange={(e) => set("tipo")(e.target.value)}
-                  className="h-12 w-full rounded-none border border-white/45 bg-white px-4 text-[0.94rem] text-text outline-none focus-visible:border-primary-dark focus-visible:ring-2 focus-visible:ring-primary-dark/40"
-                >
-                  {TIPOS_CLIENTE.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <Campo
-                id="c-req" label="Producto o servicio requerido *" value={datos.requerimiento}
-                onChange={set("requerimiento")} invalid={invalido("requerimiento")}
-                placeholder="Ej. papel bond A4, servicio de limpieza mensual" className="sm:col-span-2"
-              />
-
-              <div className="grid gap-2 sm:col-span-2">
-                <Label htmlFor="c-msg" className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-white">
-                  Mensaje
-                </Label>
-                <Textarea
-                  id="c-msg"
-                  value={datos.mensaje}
-                  onChange={(e) => set("mensaje")(e.target.value)}
-                  placeholder="Cantidades, plazos o cualquier detalle adicional."
-                  className="min-h-[112px] rounded-none border-white/45 bg-white text-[0.94rem] text-text placeholder:text-text-light/70 focus-visible:border-primary-dark focus-visible:ring-primary-dark/40"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="group mt-2 inline-flex h-[54px] items-center justify-center gap-3 bg-primary-dark px-8 text-[0.84rem] font-bold uppercase tracking-[0.09em] text-white transition-colors hover:bg-primary sm:col-span-2"
-              >
-                Enviar solicitud
-                <ArrowRight
-                  className="size-4 transition-transform duration-300 group-hover:translate-x-1"
-                  aria-hidden="true"
-                />
-              </button>
-            </form>
-
-            <div aria-live="polite" className="mt-5 empty:mt-0">
-              {faltan.length > 0 && (
-                <p className="flex items-start gap-2.5 border border-white/45 bg-white/15 p-4 text-[0.88rem] font-medium text-white">
-                  <AlertCircle className="mt-0.5 size-4 flex-none" aria-hidden="true" />
-                  <span>Falta completar: {faltan.join(", ")}.</span>
-                </p>
-              )}
-
-              {salida && (
-                <div className="border border-white/45 bg-white p-5 text-text">
-                  <div className="flex items-center justify-between gap-4">
-                    <p className="flex items-center gap-2 text-[0.72rem] font-bold uppercase tracking-[0.13em] text-support-dark">
-                      <Check className="size-4" aria-hidden="true" />
-                      Solicitud preparada
-                    </p>
-                    <button
-                      type="button"
-                      onClick={copiar}
-                      className="inline-flex items-center gap-2 border border-border-strong px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.08em] text-text transition-colors hover:border-accent hover:text-accent"
-                    >
-                      <Copy className="size-3.5" aria-hidden="true" />
-                      {copiado ? "Copiado" : "Copiar"}
-                    </button>
-                  </div>
-                  <pre className="mt-3 max-h-64 overflow-auto whitespace-pre-wrap break-words border border-border bg-surface-muted p-4 text-[0.78rem] leading-relaxed text-text-light">
-                    {salida}
-                  </pre>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {(
+                [
+                  ["nombre", "Nombre y apellidos", "text", "name"],
+                  ["organizacion", "Empresa o institución", "text", "organization"],
+                  ["correo", "Correo electrónico", "email", "email"],
+                  ["telefono", "Teléfono (opcional)", "tel", "tel"],
+                ] as const
+              ).map(([k, label, type, ac]) => (
+                <div key={k}>
+                  <label htmlFor={`c-${k}`} className="text-[0.8rem] font-bold uppercase tracking-[0.1em] text-text-light">
+                    {label}
+                  </label>
+                  <input
+                    id={`c-${k}`}
+                    type={type}
+                    autoComplete={ac}
+                    value={d[k]}
+                    onChange={(e) => set(k, e.target.value)}
+                    aria-invalid={!!errores[k]}
+                    aria-describedby={errores[k] ? `c-${k}-err` : undefined}
+                    className={cn(campo, "mt-2", errores[k] && "border-destructive")}
+                  />
+                  {errores[k] && <Error id={`c-${k}-err`} texto={errores[k] as string} />}
                 </div>
-              )}
+              ))}
             </div>
-          </div>
-        </Reveal>
-      </div>
-    </section>
+
+            {/* trampa para bots, invisible para personas */}
+            <input
+              type="text"
+              name="web"
+              tabIndex={-1}
+              autoComplete="off"
+              value={d.web}
+              onChange={(e) => set("web", e.target.value)}
+              className="absolute -left-[9999px] size-px opacity-0"
+              aria-hidden="true"
+            />
+
+            <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row">
+              <button type="button" onClick={() => setPaso(1)} className="btn btn-ghost">
+                <ArrowLeft className="size-4" aria-hidden="true" />
+                Atrás
+              </button>
+              <button type="submit" disabled={estado === "enviando"} className="btn btn-primary flex-1">
+                {estado === "enviando" ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                    Enviando…
+                  </>
+                ) : (
+                  <>
+                    Enviar solicitud
+                    <ArrowRight className="flecha size-4" aria-hidden="true" />
+                  </>
+                )}
+              </button>
+            </div>
+            <p className="mt-4 text-center text-[0.8rem] text-text-light">
+              Usamos sus datos solo para responder a esta solicitud.
+            </p>
+          </motion.form>
+        )}
+
+        {paso === 3 && (
+          <motion.div key="p3" {...anim} aria-live="polite">
+            {estado === "enviado" ? (
+              <div className="py-6 text-center">
+                <motion.span
+                  initial={reduce ? false : { scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 18 }}
+                  className="mx-auto grid size-20 place-items-center rounded-full bg-surface-muted text-primary-bright"
+                >
+                  <CheckCircle2 className="size-10" aria-hidden="true" />
+                </motion.span>
+                <p className="mt-6 font-heading text-[1.5rem] font-extrabold">Solicitud recibida</p>
+                <p className="mx-auto mt-3 max-w-[34ch] text-text-light">
+                  Gracias, {d.nombre.split(" ")[0]}. Revisaremos su requerimiento y le responderemos a{" "}
+                  <strong className="text-text">{d.correo}</strong>.
+                </p>
+                <Link href="/" className="btn btn-ghost mt-8">Volver al inicio</Link>
+              </div>
+            ) : (
+              <div>
+                <p className="font-heading text-[1.3rem] font-extrabold">Su solicitud está lista</p>
+                <p className="mt-2 text-[0.95rem] text-text-light">
+                  Envíenosla por el canal que prefiera; ya está redactada con todos los datos.
+                </p>
+                <pre className="mt-5 max-h-56 overflow-auto whitespace-pre-wrap rounded-xl border border-border bg-surface-muted p-4 text-[0.82rem] leading-relaxed text-text-light">
+                  {resumen}
+                </pre>
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  {whatsapp && (
+                    <a
+                      className="btn btn-secondary"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(resumen)}`}
+                    >
+                      Enviar por WhatsApp
+                    </a>
+                  )}
+                  {correoDefinido && (
+                    <a
+                      className="btn btn-secondary"
+                      href={`mailto:${EMPRESA.correo}?subject=${encodeURIComponent("Solicitud de cotización")}&body=${encodeURIComponent(resumen)}`}
+                    >
+                      Enviar por correo
+                    </a>
+                  )}
+                  <button type="button" onClick={copiar} className={cn("btn btn-ghost", !whatsapp && !correoDefinido && "sm:col-span-2")}>
+                    {copiado ? <Check className="size-4" aria-hidden="true" /> : <Copy className="size-4" aria-hidden="true" />}
+                    {copiado ? "Copiada" : "Copiar solicitud"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
-function Campo({
-  id, label, value, onChange, placeholder, type = "text",
-  invalid = false, className, autoComplete,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: string;
-  invalid?: boolean;
-  className?: string;
-  autoComplete?: string;
-}) {
+function Error({ texto, id }: { texto: string; id?: string }) {
   return (
-    <div className={cn("grid gap-2", className)}>
-      <Label htmlFor={id} className="text-[0.68rem] font-bold uppercase tracking-[0.14em] text-white">
-        {label}
-      </Label>
-      <Input
-        id={id}
-        type={type}
-        value={value}
-        autoComplete={autoComplete}
-        aria-invalid={invalid || undefined}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={cn(
-          "h-12 rounded-none border-white/45 bg-white text-[0.94rem] text-text placeholder:text-text-light/70",
-          "focus-visible:border-primary-dark focus-visible:ring-primary-dark/40",
-          invalid && "border-primary-dark ring-2 ring-primary-dark/50",
-        )}
-      />
-    </div>
+    <p id={id} className="mt-2 flex items-center gap-1.5 text-[0.84rem] font-semibold text-destructive">
+      <AlertCircle className="size-4" aria-hidden="true" />
+      {texto}
+    </p>
+  );
+}
+
+/**
+ * useSearchParams exige un límite de Suspense para que la página siga
+ * prerenderizándose como estática; el respaldo es el mismo formulario vacío.
+ */
+export function Cotizador({ compacto = false }: { compacto?: boolean }) {
+  return (
+    <React.Suspense fallback={<div className="min-h-[560px] rounded-3xl bg-white" aria-hidden="true" />}>
+      <Formulario compacto={compacto} />
+    </React.Suspense>
   );
 }

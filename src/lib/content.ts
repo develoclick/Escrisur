@@ -1,8 +1,9 @@
 /**
- * Contenido único del sitio. Todo el texto vive aquí para que las secciones
- * queden como composición pura y el copy se pueda revisar en un solo lugar.
+ * Datos y textos compartidos del sitio.
  *
- * PENDIENTE marca los datos que la empresa aún no ha facilitado. No se inventan.
+ * Los datos registrales provienen de la Partida Electrónica N.º 11635257.
+ * PENDIENTE marca información que la empresa aún no ha facilitado: no se inventa.
+ * Si se completa `whatsapp`, el botón flotante de WhatsApp aparece solo.
  */
 
 export const PENDIENTE = "[PENDIENTE DE COMPLETAR]";
@@ -10,172 +11,80 @@ export const PENDIENTE = "[PENDIENTE DE COMPLETAR]";
 export const EMPRESA = {
   razonSocial: "ESCRITORIO Y SUMINISTROS DEL SUR E.I.R.L.",
   marca: "ESCRISUR",
+  descriptor: "Distribuidora",
+  lineas: "Materiales de escritorio | Ferretería",
   tipo: "E.I.R.L.",
   partida: "11635257",
-  titular: "GUADALUPE FIORELA CAYANI DE LA CRUZ",
+  zonaRegistral: "Zona Registral N.º XII — Sede Arequipa",
+  titular: "Guadalupe Fiorela Cayani de la Cruz",
   cargo: "Titular-Gerente",
-  distrito: "Cabanaconde",
-  provincia: "Caylloma",
+  distrito: "Arequipa",
+  provincia: "Arequipa",
   region: "Arequipa",
   pais: "Perú",
   anio: "2025",
+  actividades: 44,
   telefono: PENDIENTE,
   correo: PENDIENTE,
+  /** Número en formato internacional sin signos, p. ej. "51987654321". */
+  whatsapp: "",
+  sitio: "https://escrisur.pe",
 } as const;
 
 export const NAV = [
-  { label: "Inicio", href: "/" },
-  { label: "Nosotros", href: "#nosotros" },
-  { label: "Productos", href: "#productos" },
-  { label: "Servicios", href: "#servicios" },
-  { label: "Licitaciones", href: "#licitaciones" },
-  { label: "Contacto", href: "#cotizacion" },
+  { label: "Nosotros", href: "/nosotros" },
+  { label: "Escritorio", href: "/escritorio" },
+  { label: "Ferretería", href: "/ferreteria" },
+  { label: "Servicios", href: "/servicios" },
+  { label: "Licitaciones", href: "/licitaciones" },
+  { label: "Contacto", href: "/contacto" },
 ] as const;
 
-export const HERO = {
-  eyebrow: "Abastecimiento institucional",
-  titulo: "Soluciones de abastecimiento para empresas e instituciones",
-  texto:
-    "Productos y servicios para oficinas, instituciones y empresas, con atención orientada a las necesidades de cada organización.",
-  ctaPrimario: { label: "Solicitar cotización", href: "#cotizacion" },
-  ctaSecundario: { label: "Conocer más", href: "#nosotros" },
-} as const;
-
-export const ABOUT = {
-  eyebrow: "Empresa peruana registrada",
-  titulo: "Abastecimiento confiable para cada necesidad",
-  cita:
-    "ESCRITORIO Y SUMINISTROS DEL SUR E.I.R.L. es una empresa peruana orientada a la comercialización de productos y prestación de servicios para empresas, instituciones y entidades públicas y privadas.",
-  claim:
-    "Atendemos organizaciones de distinto tamaño en la región Arequipa y a nivel nacional.",
-  puntos: [
-    "Comercialización de productos para oficinas e instituciones",
-    "Prestación de servicios de limpieza y abastecimiento",
-    "Participación en procesos de contratación pública y privada",
-  ],
-  cta: { label: "Conocer nuestra empresa", href: "#licitaciones" },
-} as const;
-
-export type Producto = {
-  numero: string;
-  titulo: string;
-  texto: string;
-  media: string;
-  icono: "papeleria" | "oficina" | "informatica" | "ferreteria" | "epp" | "limpieza";
+/** Color que cada ruta aplica a la barra de desplazamiento y a la transición. */
+export const TEMA_RUTA: Record<string, "primary" | "accent" | "dark"> = {
+  "/": "accent",
+  "/nosotros": "primary",
+  "/escritorio": "primary",
+  "/ferreteria": "accent",
+  "/servicios": "primary",
+  "/licitaciones": "dark",
+  "/contacto": "accent",
 };
 
-export const PRODUCTOS: Producto[] = [
-  {
-    numero: "01",
-    titulo: "Útiles escolares y papelería",
-    texto:
-      "Cuadernos, papel bond, carpetas, material de escritura y todo el consumible de aula y oficina.",
-    media: "papeleria",
-    icono: "papeleria",
-  },
-  {
-    numero: "02",
-    titulo: "Artículos de oficina",
-    texto:
-      "Archivadores, organizadores, mobiliario menor y suministros para el funcionamiento diario.",
-    media: "oficina",
-    icono: "oficina",
-  },
-  {
-    numero: "03",
-    titulo: "Equipamiento informático",
-    texto:
-      "Computadoras, impresoras, consumibles de impresión y accesorios para puestos de trabajo.",
-    media: "informatica",
-    icono: "informatica",
-  },
-  {
-    numero: "04",
-    titulo: "Ferretería y materiales",
-    texto:
-      "Cemento, fierro, pinturas, herramientas y materiales para obra y mantenimiento.",
-    media: "ferreteria",
-    icono: "ferreteria",
-  },
-  {
-    numero: "05",
-    titulo: "Equipos de protección personal",
-    texto:
-      "Cascos, guantes, chalecos, mascarillas, botas y gafas conforme a la normativa de seguridad.",
-    media: "epp",
-    icono: "epp",
-  },
-  {
-    numero: "06",
-    titulo: "Productos de limpieza",
-    texto:
-      "Insumos, desinfectantes y productos sanitarios para el mantenimiento de instalaciones.",
-    media: "limpieza",
-    icono: "limpieza",
-  },
-];
+/** Fotografías del cliente, ya optimizadas en /public/img/fotos. */
+export const FOTOS = {
+  suministrosEscritorio: "/img/fotos/suministros-escritorio.jpg",
+  herramientas: "/img/fotos/herramientas.jpg",
+  almacen: "/img/fotos/almacen-logistica.jpg",
+  entrega: "/img/fotos/entrega-distribucion.jpg",
+  atencion: "/img/fotos/atencion-cliente.jpg",
+  oficina: "/img/fotos/oficina-corporativa.jpg",
+  epp: "/img/fotos/epp.jpg",
+  aliado: "/img/fotos/aliado-oficina-ferreteria.jpg",
+  papeleria: "/img/fotos/estanteria-papeleria.jpg",
+  exhibicionHerramientas: "/img/fotos/exhibicion-herramientas.jpg",
+  asesoria: "/img/fotos/asesoria-comercial.jpg",
+  papelToner: "/img/fotos/papel-tintas-toner.jpg",
+  utiles: "/img/fotos/utiles-oficina.jpg",
+  inventario: "/img/fotos/control-inventario.jpg",
+  distribucion: "/img/fotos/centro-distribucion.jpg",
+  limpieza: "/img/fotos/productos-limpieza.jpg",
+  archivadores: "/img/fotos/archivadores.jpg",
+  tornilleria: "/img/fotos/tornilleria.jpg",
+  stock: "/img/fotos/stock-almacen.jpg",
+  acuerdo: "/img/fotos/acuerdo-comercial.jpg",
+} as const;
 
-export type Servicio = {
-  numero: string;
-  titulo: string;
-  texto: string;
-  icono: "limpieza" | "insumos" | "abastecimiento" | "institucional" | "licitaciones";
-};
+export type Foto = (typeof FOTOS)[keyof typeof FOTOS];
 
-export const SERVICIOS: Servicio[] = [
-  {
-    numero: "01",
-    titulo: "Limpieza integral",
-    texto:
-      "Servicio de limpieza para oficinas, centros comerciales, establecimientos e instalaciones industriales.",
-    icono: "limpieza",
-  },
-  {
-    numero: "02",
-    titulo: "Suministro de insumos de limpieza",
-    texto:
-      "Abastecimiento continuo de insumos y productos sanitarios para el mantenimiento de las instalaciones.",
-    icono: "insumos",
-  },
-  {
-    numero: "03",
-    titulo: "Abastecimiento empresarial",
-    texto:
-      "Provisión programada de productos de oficina y consumibles según el consumo de cada organización.",
-    icono: "abastecimiento",
-  },
-  {
-    numero: "04",
-    titulo: "Atención institucional",
-    texto:
-      "Gestión de requerimientos de entidades públicas y privadas con la documentación que cada proceso exige.",
-    icono: "institucional",
-  },
-  {
-    numero: "05",
-    titulo: "Participación en licitaciones y concursos",
-    texto:
-      "Presentación como oferente en procesos de contratación pública y privada, de ámbito nacional.",
-    icono: "licitaciones",
-  },
-];
-
-export const ESTADISTICAS = [
-  { valor: "44", sufijo: "", label: "Actividades comprendidas en el objeto social" },
-  { valor: "01", sufijo: "", label: "Empresa constituida en Perú" },
-  { valor: "E.I.R.L.", sufijo: "", label: "Tipo de empresa" },
-  { valor: "2025", sufijo: "", label: "Año de constitución" },
-] as const;
-
-export const AREAS = [
-  { titulo: "Empresas privadas", media: "empresas" },
-  { titulo: "Entidades públicas", media: "publicas" },
-  { titulo: "Instituciones educativas", media: "educativas" },
-  { titulo: "Municipalidades", media: "municipalidades" },
-  { titulo: "Centros de salud", media: "salud" },
-  { titulo: "Industria", media: "industria" },
-  { titulo: "Construcción", media: "construccion" },
-  { titulo: "Oficinas", media: "oficinas" },
+/** Opciones del formulario; `valor` viaja en la URL (?linea=) para prellenarlo. */
+export const LINEAS_FORM = [
+  { valor: "escritorio", label: "Materiales de escritorio" },
+  { valor: "ferreteria", label: "Ferretería y materiales" },
+  { valor: "epp", label: "Equipos de protección personal" },
+  { valor: "limpieza", label: "Limpieza e insumos" },
+  { valor: "licitacion", label: "Proceso de contratación pública" },
+  { valor: "mixto", label: "Requerimiento mixto" },
 ] as const;
 
 export const TIPOS_CLIENTE = [
@@ -186,76 +95,3 @@ export const TIPOS_CLIENTE = [
   "Centro de salud",
   "Otro",
 ] as const;
-
-export const PROCESO = [
-  {
-    paso: "01",
-    titulo: "Envíenos su requerimiento",
-    texto: "Recibimos la especificación de los bienes o servicios que necesita.",
-    media: "paso-1",
-  },
-  {
-    paso: "02",
-    titulo: "Evaluamos su necesidad",
-    texto: "Revisamos cantidades, características y condiciones de entrega.",
-    media: "paso-2",
-  },
-  {
-    paso: "03",
-    titulo: "Preparamos la propuesta",
-    texto: "Elaboramos la cotización con la documentación que el proceso exige.",
-    media: "paso-3",
-  },
-  {
-    paso: "04",
-    titulo: "Coordinamos la atención",
-    texto: "Acordamos plazos y lugar de entrega, y ejecutamos la atención.",
-    media: "paso-4",
-  },
-] as const;
-
-export const LICITACIONES = {
-  eyebrow: "Sector público",
-  titulo: "Soluciones para el sector público",
-  texto:
-    "Participamos como oferentes en procesos de contratación pública y privada relacionados con los bienes y servicios comprendidos dentro de nuestras actividades.",
-  items: [
-    "Licitaciones",
-    "Concursos",
-    "Cotizaciones",
-    "Suministro de bienes",
-    "Servicios",
-    "Atención institucional",
-  ],
-  cta: { label: "Consultar para contrataciones", href: "#cotizacion" },
-} as const;
-
-export const CTA_FINAL = {
-  titulo: "¿Tiene un requerimiento de abastecimiento?",
-  texto:
-    "Envíenos la descripción de los bienes o servicios que necesita y preparamos una propuesta para su organización.",
-  cta: { label: "Solicitar cotización", href: "#cotizacion" },
-} as const;
-
-export const FOOTER = {
-  columnas: [
-    {
-      titulo: "Empresa",
-      items: [
-        { label: "Inicio", href: "/" },
-        { label: "Nosotros", href: "#nosotros" },
-        { label: "Productos", href: "#productos" },
-        { label: "Servicios", href: "#servicios" },
-      ],
-    },
-    {
-      titulo: "Servicios",
-      items: [
-        { label: "Limpieza integral", href: "#servicios" },
-        { label: "Abastecimiento", href: "#servicios" },
-        { label: "Suministros", href: "#productos" },
-        { label: "Licitaciones", href: "#licitaciones" },
-      ],
-    },
-  ],
-} as const;
